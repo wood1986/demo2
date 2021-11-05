@@ -17,8 +17,9 @@ class MyPlugin {
   }
 
   apply(compiler) {
+    let childCompiler = null;
     compiler.hooks.thisCompilation.tap(PLUGIN_NAME, (compilation) => {
-      let childCompiler = compilation.createChildCompiler(PLUGIN_NAME);
+      childCompiler = compilation.createChildCompiler(PLUGIN_NAME);
       new NodeTemplatePlugin().apply(childCompiler);
       new NodeTargetPlugin().apply(childCompiler);
       new LoaderTargetPlugin("node").apply(childCompiler);
@@ -53,11 +54,11 @@ class MyPlugin {
           ).apply(childCompiler);
         }
       }
+    });
 
-      compiler.hooks.make.tapAsync(PLUGIN_NAME, (compilation, callback) => {
-        childCompiler.runAsChild((error, _entries, childCompilation) => {
-          callback();
-        });
+    compiler.hooks.make.tapAsync(PLUGIN_NAME, (compilation, callback) => {
+      childCompiler.runAsChild((error, _entries, childCompilation) => {
+        callback();
       });
     });
   }
