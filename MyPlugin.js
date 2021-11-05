@@ -13,8 +13,9 @@ class MyPlugin {
   }
 
   apply(compiler) {
+    let childCompiler = null;
     compiler.hooks.thisCompilation.tap(PLUGIN_NAME, (compilation) => {
-      let childCompiler = compilation.createChildCompiler(PLUGIN_NAME);
+      childCompiler = compilation.createChildCompiler(PLUGIN_NAME);
       new webpack.node.NodeTemplatePlugin().apply(childCompiler);
       new webpack.node.NodeTargetPlugin().apply(childCompiler);
       new webpack.library.EnableLibraryPlugin("commonjs2").apply(childCompiler);
@@ -44,11 +45,11 @@ class MyPlugin {
         "type": this.type,
       };
       webpack.EntryOptionPlugin.applyEntryOption(childCompiler, compilation.compiler.context, this.options.entry);
+    });
 
-      compiler.hooks.make.tapAsync(PLUGIN_NAME, (compilation, callback) => {
-        childCompiler.runAsChild((error, _entries, childCompilation) => {
-          callback();
-        });
+    compiler.hooks.make.tapAsync(PLUGIN_NAME, (compilation, callback) => {
+      childCompiler.runAsChild((error, _entries, childCompilation) => {
+        callback();
       });
     });
   }
